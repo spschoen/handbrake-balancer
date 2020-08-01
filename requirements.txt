@@ -1,0 +1,2 @@
+opencv-python~=4.3.0.36
+requests~=2.24.0
