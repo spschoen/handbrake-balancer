@@ -85,7 +85,7 @@ Both scripts are hands off, you could probably just run `python3 rate_calculator
 
 2. The rate calculator requires one of your profiles be named `shows` if you have a profile called `anime` or `animation`, because:
 
-3. The rate calculator won't calculate for profiles that match `anime` or `animation`, because I didn't go looking for an example animated video to use for sampling.  This really shouldn't matter for most people but I have a profile geared for animation, so I just set it to be equal to TV show processing rate and that should be close enough.  If anyone knows of a publically available high bitrate animation sample file (~40Mbps, 30s long) this project could use, please let me know or submit a PR that adds that functionality!
+3. The rate calculator won't calculate for profiles that match `anime` or `animation`, because I didn't go looking for an example animated video to use for sampling.  This really shouldn't matter for most people, but I was concerned for my animated video profile so I decided to leave it alone and do some assumptions.  I set the animated processing rate to be equal to TV show processing rate and that should be close enough.  If anyone knows of a publically available high bitrate animation sample file (~40Mbps, ~30s long) this project could use, please let me know or submit a PR that adds that functionality!
 
 4. The balancer is not active, you have to run it every time you want to process files.  I debated adding the ability to calculate load on the fly and move files around, but since I didn't look into whether or not the original handbrake image exposes how far into processing it is, I decided against it and kept this as a simple batch analyzer/mover.  As usual, if you've got a better idea, I'm all ears.
 
