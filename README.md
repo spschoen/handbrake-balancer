@@ -34,8 +34,8 @@ The encoders can be named however you please (I used `hostname-#` while testing)
 
 * Python 3.8.2 was used, I imagine this will work with any Python 3 but I can't guarantee nor recommend Python 2.  C'mon y'all, it's dead, let it be dead.
 * Libraries to install:
- * `opencv-python` / `cv2` - used to calculate the number of frames and frame rate of input files, not required if you're only calculating the FPS of your encoders
- * `requests` - used to download testing sample files from `http://jell.yfish.us/`, not required if you've already calculated the FPS of your encoders.
+  * `opencv-python` / `cv2` - used to calculate the number of frames and frame rate of input files, not required if you're only calculating the FPS of your encoders
+  * `requests` - used to download testing sample files from `http://jell.yfish.us/`, not required if you've already calculated the FPS of your encoders.
 * (Optional) Active network connection - as said above, `rate_calculator.py` will download a 142MB file from the internet, so you must either provide that file or a network connection to download it.
 
 ### Configuration
