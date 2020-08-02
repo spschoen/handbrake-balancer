@@ -94,3 +94,5 @@ Both scripts are hands off, you could probably just run `python3 rate_calculator
 6. The balancer should probably have an option to recalculate processing rate.
 
 7. The balancer should probably be able to function if one or more encoders is offline (currently, it'll just send anywhere and not care).  I'll probably do this next, it should be as easy as getting the current "queue" of files and seeing if files are being written to the output folder, and if not then assume these files aren't being processed and should be moved elsewhere.
+
+8. It'd probably be trivial to create an encoder class/object to handle encoder interactions and abstract a big more, clean up the code.  Had some issues and was accessing weird things all the time that are better stored as parts of an object rather than variables in the queue object.
