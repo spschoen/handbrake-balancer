@@ -41,6 +41,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("base_path", help="Paths-like object")
     parser.add_argument("--force_download", help="Force download/overwrite of sample file", action="store_true")
+    parser.add_argument("--recalculate", help="Force recalculating of rates", action="store_true")
     args = parser.parse_args()
 
     if not (os.path.exists(args.base_path) and os.path.isdir(args.base_path)):
@@ -49,7 +50,7 @@ if __name__ == "__main__":
     test_file_path = os.path.join(args.base_path, TEST_FILE_NAME)
     encoder_rates = {}
 
-    if not os.path.exists(os.path.join(args.base_path, "rates.json")):
+    if not os.path.exists(os.path.join(args.base_path, "rates.json")) or args.recalculate:
         if not os.path.exists(test_file_path) or args.force_download:
             test_file_url = "http://jell.yfish.us/media/{}".format(TEST_FILE_NAME)
             request = requests.get(test_file_url, allow_redirects=True)
@@ -77,3 +78,6 @@ if __name__ == "__main__":
 
         with open(os.path.join(args.base_path, "rates.json"), "w") as encoder_rates_file:
             json.dump(encoder_rates, encoder_rates_file, indent=4, sort_keys=True)
+
+    else:
+        print("rates.json exists, not recalculating.")

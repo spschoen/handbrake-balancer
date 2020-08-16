@@ -75,7 +75,7 @@ class Queue:
             self.queue_info[shortest_queue_machine]["load"] += job_loads[shortest_queue_machine]
             self.jobs_in_queue = True
 
-    def distribute_jobs(self, base_path, encoders_path):
+    def distribute_jobs(self, encoders_path, debug=False):
         if not self.jobs_in_queue:
             logger.error("No jobs in queue, cannot distribute nothing!")
             return
@@ -83,15 +83,18 @@ class Queue:
         logger.info("Distributing files to calculated encoders")
         for encoder in self.queue_info:
             for job in self.queue_info[encoder]["jobs"]:
-                logger.debug(
-                    "Moving {} to {}".format(job.path.replace(base_path, ""), os.path.join(encoders_path.replace(base_path, ""), encoder, job.profile, job.filename))
-                )
-                os.rename(job.path, os.path.join(encoders_path, encoder, job.profile, job.filename))
+                logger.debug("Encoder [{}]-[{}]: Appending: {}".format(encoder, job.profile, job.filename))
+                if not debug:
+                    os.rename(job.path, os.path.join(encoders_path, encoder, job.profile, job.filename))
+
+        for encoder in self.queue_info:
+            logger.info("Encoder [{}] queue: {}".format(encoder, self.queue_info[encoder]["load"]))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("base_path", help="Paths-like object")
+    parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()
 
     if not (os.path.exists(args.base_path) and os.path.isdir(args.base_path)):
@@ -123,4 +126,4 @@ if __name__ == "__main__":
     with open(os.path.join(args.base_path, "queue.json"), "w") as queue_file:
         json.dump(queue.queue_info, queue_file, indent=2, cls=VideoJSONEncoder)
 
-    queue.distribute_jobs(args.base_path, encoders)
+    queue.distribute_jobs(encoders, debug=args.debug)
