@@ -80,13 +80,14 @@ class Queue:
             logger.error("No jobs in queue, cannot distribute nothing!")
             return
 
-        logger.info("Distributing files to calculated encoders")
+        logger.info("Assigning files to calculated encoders")
         for encoder in self.queue_info:
             for job in self.queue_info[encoder]["jobs"]:
-                logger.debug("Encoder [{}]-[{}]: Appending: {}".format(encoder, job.profile, job.filename))
+                job_assigned_path = pathlib.Path(encoders_path, encoder, job.profile, job.filename)
+                logger.info("Assigning encoder [{}]-[{}]: [{}]".format(encoder, job.profile, job.filename))
+                logger.debug("Copying [{}] -> [{}]".format(job.path, job_assigned_path))
                 if not debug:
-                    pathlib.Path(job.path).rename(pathlib.Path(encoders_path, encoder, job.profile, job.filename))
-                    # os.rename(job.path, os.path.join(encoders_path, encoder, job.profile, job.filename))
+                    pathlib.Path(job.path).rename(job_assigned_path)
 
         for encoder in self.queue_info:
             logger.info("Encoder [{}] queue: {}".format(encoder, self.queue_info[encoder]["load"]))
