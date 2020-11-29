@@ -127,5 +127,6 @@ if __name__ == "__main__":
 
     queue = Queue(base_path)
     queue.add_videos_to_queue(pending_jobs_sorted)
-    base_path.joinpath("queue.json").write_text(json.dumps(queue.queue_info, indent=4, cls=VideoJSONEncoder))
+    if not args.debug:
+        base_path.joinpath("queue.json").write_text(json.dumps(queue.queue_info, indent=4, cls=VideoJSONEncoder))
     queue.distribute_jobs(encoder_path, debug=args.debug)
