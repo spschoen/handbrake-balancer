@@ -98,7 +98,6 @@ if __name__ == "__main__":
     parser.add_argument("base_path", help="Paths-like object")
     parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()
-    logger.debug(args)
 
     base_path = pathlib.Path(args.base_path)
     rates_file = base_path.joinpath("rates.json")
