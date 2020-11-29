@@ -4,7 +4,6 @@ import math
 import os
 import requests
 import shutil
-import time
 
 from datetime import datetime
 from log import logger
@@ -27,8 +26,6 @@ def get_conversion_rate(sample_path, profile_path, output_path):
             else:
                 logger.info("Sample still copying...")
                 file_size = os.path.getsize(output_file_path)
-
-        time.sleep(3)
 
     if os.path.exists(os.path.join(profile_path, TEST_FILE_NAME)):
         os.remove(os.path.join(profile_path, TEST_FILE_NAME))
