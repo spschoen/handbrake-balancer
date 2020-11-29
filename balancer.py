@@ -85,8 +85,8 @@ class Queue:
             for job in self.queue_info[encoder]["jobs"]:
                 job_assigned_path = pathlib.Path(encoders_path, encoder, job.profile, job.filename)
                 logger.info("Assigning encoder [{}]-[{}]: [{}]".format(encoder, job.profile, job.filename))
-                logger.debug("Copying [{}] -> [{}]".format(job.path, job_assigned_path))
                 if not debug:
+                    logger.debug("Copying [{}] -> [{}]".format(job.path, job_assigned_path))
                     pathlib.Path(job.path).rename(job_assigned_path)
 
         for encoder in self.queue_info:
