@@ -1,7 +1,7 @@
 import argparse
 import cv2
 import json
-import os
+import pathlib
 
 from log import logger
 
@@ -9,10 +9,7 @@ from log import logger
 class VideoJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, Video):
-            return {
-                "filename": o.filename, "profile": o.profile, "frames": o.frames, "frame_rate": o.frame_rate,
-                "duration": o.duration, "path": o.path
-            }
+            return o.as_dict()
         return json.JSONEncoder.default(self, o)
 
 
@@ -30,8 +27,12 @@ class Video:
 
     def as_dict(self):
         return {
-            "filename": self.filename, "profile": self.profile, "frames": self.frames, "frame_rate": self.frame_rate,
-            "duration": self.duration, "path": self.path
+            "filename": self.filename,
+            "profile": self.profile,
+            "frames": self.frames,
+            "frame_rate": self.frame_rate,
+            "duration": self.duration,
+            "path": str(self.path)
         }
 
     def __str__(self):
@@ -44,10 +45,9 @@ class Video:
 
 
 class Queue:
-    def __init__(self, base_path):
+    def __init__(self, queue_base_path):
         self.jobs_in_queue = False
-        with open(os.path.join(base_path, "rates.json"), "r") as rates_file:
-            self.encoder_conversion_rates = json.load(rates_file)
+        self.encoder_conversion_rates = json.loads(pathlib.Path(queue_base_path, "rates.json").read_text())
         self.queue_info = dict.fromkeys(self.encoder_conversion_rates.keys())
         for encoder in self.queue_info:
             self.queue_info[encoder] = {"load": 0, "jobs": []}
@@ -85,7 +85,8 @@ class Queue:
             for job in self.queue_info[encoder]["jobs"]:
                 logger.debug("Encoder [{}]-[{}]: Appending: {}".format(encoder, job.profile, job.filename))
                 if not debug:
-                    os.rename(job.path, os.path.join(encoders_path, encoder, job.profile, job.filename))
+                    pathlib.Path(job.path).rename(pathlib.Path(encoders_path, encoder, job.profile, job.filename))
+                    # os.rename(job.path, os.path.join(encoders_path, encoder, job.profile, job.filename))
 
         for encoder in self.queue_info:
             logger.info("Encoder [{}] queue: {}".format(encoder, self.queue_info[encoder]["load"]))
@@ -97,33 +98,34 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()
 
-    if not (os.path.exists(args.base_path) and os.path.isdir(args.base_path)):
-        raise FileNotFoundError("Base path [{}] does not exists/is not a directory, exiting.".format(args.base_path))
+    base_path = pathlib.Path(args.base_path)
+    rates_file = base_path.joinpath("rates.json")
 
-    if not os.path.exists(os.path.join(args.base_path, "rates.json")):
-        raise FileNotFoundError("balancer.py assumes rates.json has been calculated, please run rate_calculator.py")
+    if not (base_path.exists() and base_path.is_dir()):
+        raise FileNotFoundError("Base path [{}] does not exists/is not a directory, exiting.".format(base_path))
+    if not rates_file.exists():
+        raise FileNotFoundError("[rates.json] has not been calculated, please run rate_calculator.py")
 
-    encoders = os.path.join(args.base_path, "encoders")
-    inputs = os.path.join(args.base_path, "inputs")
-    output = os.path.join(args.base_path, "output")
+    encoder_path = base_path.joinpath("encoders")
+    input_path = base_path.joinpath("inputs")
+    output_path = base_path.joinpath("output")
+
     pending_jobs = []
 
     logger.info("Scanning for files to enqueue")
-    for input_profile in os.scandir(inputs):
-        logger.debug("Scanning profile {}".format(input_profile.name))
-        for file in os.scandir(input_profile.path):
-            logger.debug("Scanning file {}".format(file.name))
-            capture = cv2.VideoCapture(file.path)
+    for input_profile in input_path.iterdir():
+        logger.debug("Scanning profile [{}]".format(input_profile.name))
+        for file in input_profile.iterdir():
+            logger.debug("Scanning file [{}]".format(file.name))
+            capture = cv2.VideoCapture(str(file))
             frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
             fps = capture.get(cv2.CAP_PROP_FPS)
-            pending_jobs.append(Video(file.name, file.path, frame_count, fps, input_profile.name.lower()))
+            pending_jobs.append(Video(file.name, file, frame_count, fps, input_profile.name.lower()))
             capture.release()
 
     pending_jobs_sorted = sorted(pending_jobs, key=lambda x: x.frames, reverse=True)
 
-    queue = Queue(args.base_path)
+    queue = Queue(base_path)
     queue.add_videos_to_queue(pending_jobs_sorted)
-    with open(os.path.join(args.base_path, "queue.json"), "w") as queue_file:
-        json.dump(queue.queue_info, queue_file, indent=2, cls=VideoJSONEncoder)
-
-    queue.distribute_jobs(encoders, debug=args.debug)
+    base_path.joinpath("queue.json").write_text(json.dumps(queue.queue_info, indent=4, cls=VideoJSONEncoder))
+    queue.distribute_jobs(encoder_path, debug=args.debug)
